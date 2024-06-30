@@ -16,11 +16,12 @@ const refs = {
 const lightbox = new SimpleLightbox('.gallery a');
 
 let page = 1;
+let searchQuery;
 
 async function onSearch(e) {
   e.preventDefault();
 
-  const searchQuery = refs.searchForm.elements.searchQuery.value;
+  searchQuery = refs.searchForm.elements.searchQuery.value.trim();
 
   if (searchQuery === '') {
     return;
@@ -30,10 +31,13 @@ async function onSearch(e) {
 
   refs.loadMoreBtn.classList.add('is-hidden');
 
+  page = 1;
+
   try {
     const data = await loadData(searchQuery, page);
 
     if (data.hits.length === 0) {
+      showNothingFoundMessage();
       return;
     } else {
       showFetchSuccessMessage(data.totalHits);
@@ -116,6 +120,14 @@ function showFetchSuccessMessage(totalHits) {
   });
 }
 
+function showNothingFoundMessage() {
+  iziToast.info({
+    title: 'Nothing found',
+    message:
+      'Sorry, there are no images matching your search query. Please try again.',
+  });
+}
+
 function showEndOfFeedMessage() {
   iziToast.info({
     title: 'End of feed',
@@ -127,10 +139,7 @@ async function onLoadMore(e) {
   page += 1;
 
   try {
-    const data = await loadData(
-      refs.searchForm.elements.searchQuery.value,
-      page
-    );
+    const data = await loadData(searchQuery, page);
 
     if (data.hits.length === 0) {
       return;
